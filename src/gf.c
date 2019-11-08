@@ -1215,8 +1215,16 @@ static int check_ambiguous_visitor(jl_typemap_entry_t *oldentry, struct typemap_
                 closure->defs, isect, NULL, /*subtype*/0, /*offs*/0,
                 world, /*max_world_mask*/0);
         //assert((!subtype || l != after) && "bad typemap lookup result"); // should find `before` first
-        if (l != NULL && l != before && l != after) {
-            if ((exact1 || jl_type_morespecific_no_subtype((jl_value_t*)l->sig, (jl_value_t*)sig)) &&  // no subtype since `l->sig >: isect >: sig`
+        if (l != NULL) {
+            if (!msp && jl_types_equal((jl_value_t*)l->sig, isect)) {
+                // detect the case where the intersection equals one of the signatures, even
+                // though that signature is not a subtype of the other, due to imprecision
+                // in intersection.
+                reorder = 0;
+                shadowed = 0;
+            }
+            else if (l != before && l != after &&
+                (exact1 || jl_type_morespecific_no_subtype((jl_value_t*)l->sig, (jl_value_t*)sig)) &&  // no subtype since `l->sig >: isect >: sig`
                 (exact2 || jl_type_morespecific_no_subtype((jl_value_t*)l->sig, (jl_value_t*)type))) { // no subtype since `l->sig >: isect >: type`
                 // ok, intersection is already covered by a more specific method
                 reorder = 0; // this lack of ordering doesn't matter (unless we delete this method--then it will)
