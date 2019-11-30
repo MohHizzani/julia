@@ -73,7 +73,7 @@ To read every line from [`stdin`](@ref) you can use [`eachline`](@ref):
 
 ```julia
 for line in eachline(stdin)
-    print("Found $line")
+    println("Found $line")
 end
 ```
 
